@@ -1,36 +1,74 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Furnish
 
-## Getting Started
+AI 驱动的装修效果预览平台。上传房间照片，AI 生成装修效果图，3D 编辑器微调家具布局。
 
-First, run the development server:
+## 功能
+
+- 上传房间照片/户型图
+- 选择装修风格和家具，AI 生成效果图（Seedream）
+- 3D 编辑器拖拽摆放家具
+- 撤销/重做操作
+- 导出截图
+- 数据本地持久化（IndexedDB）
+
+## 技术栈
+
+- Next.js 14+ (App Router)
+- React Three Fiber + drei
+- Zustand
+- Dexie.js (IndexedDB)
+- Tailwind CSS
+
+## 开始使用
+
+### 安装依赖
+
+```bash
+npm install
+```
+
+### 配置环境变量
+
+复制 `.env.local.example` 为 `.env.local`，填入火山引擎 Seedream API 密钥：
+
+```text
+SEEDREAM_API_KEY=your_api_key
+SEEDREAM_API_URL=https://visual.volcengineapi.com/v1/images/generations
+```
+
+### 启动开发服务器
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+访问 <http://localhost:3000>
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### 运行测试
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm test
+```
 
-## Learn More
+## 项目结构
 
-To learn more about Next.js, take a look at the following resources:
+```text
+src/
+  app/            页面和 API 路由
+  components/     UI 组件
+  store/          Zustand 状态管理
+  lib/            工具函数和服务
+  data/           静态数据（家具目录）
+  types/          TypeScript 类型定义
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 开发路线
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- [x] M1: 上传 + AI 效果图生成
+- [x] M2: 3D 编辑器
+- [x] M3: 串联 + 本地持久化
+- [ ] 用户上传自定义家具
+- [ ] 精确房间尺寸输入
+- [ ] 真实材质渲染
+- [ ] 电商对接
+- [ ] 移动端适配
