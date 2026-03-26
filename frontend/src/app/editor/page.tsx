@@ -7,6 +7,7 @@ import FurniturePanel from '@/components/editor/FurniturePanel'
 import PropertyPanel from '@/components/editor/PropertyPanel'
 import Toolbar from '@/components/editor/Toolbar'
 import { useEditorStore } from '@/store/editorStore'
+import { db } from '@/lib/db'
 
 const Canvas3D = dynamic(() => import('@/components/editor/Canvas3D'), {
   ssr: false,
@@ -32,6 +33,34 @@ function EditorContent() {
       loadScene(projectId)
     }
   }, [projectId, loadScene])
+
+  useEffect(() => {
+    if (!projectId) return
+    const fetchDepth = async () => {
+      const project = await db.projects.get(projectId)
+      if (!project?.roomImage) return
+
+      const { depthMapUrl } = useEditorStore.getState()
+      if (depthMapUrl) return
+
+      const roomUrl = URL.createObjectURL(project.roomImage)
+      const formData = new FormData()
+      formData.append('file', project.roomImage, 'room.jpg')
+
+      try {
+        const resp = await fetch('/api/depth', {
+          method: 'POST',
+          body: formData,
+        })
+        if (!resp.ok) return
+        const data = await resp.json()
+        useEditorStore.getState().setDepthData(data.depth_map_base64, roomUrl)
+      } catch {
+        // depth estimation failed, fallback to basic room
+      }
+    }
+    fetchDepth()
+  }, [projectId])
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {

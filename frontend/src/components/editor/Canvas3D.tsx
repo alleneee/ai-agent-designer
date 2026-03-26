@@ -7,12 +7,16 @@ import FurnitureModel from './FurnitureModel'
 import { useEditorStore } from '@/store/editorStore'
 
 export default function Canvas3D() {
-  const { furniture, selectedId, selectFurniture } = useEditorStore()
+  const { furniture, selectedId, selectFurniture, depthMapUrl } = useEditorStore()
+
+  const cameraPos: [number, number, number] = depthMapUrl
+    ? [0, 3, 6]
+    : [5, 5, 5]
 
   return (
     <Canvas
       shadows
-      camera={{ position: [5, 5, 5], fov: 50 }}
+      camera={{ position: cameraPos, fov: 50 }}
       onPointerMissed={() => selectFurniture(null)}
       className="bg-gray-100"
     >
@@ -40,13 +44,15 @@ export default function Canvas3D() {
         maxPolarAngle={Math.PI / 2}
       />
 
-      <Grid
-        infiniteGrid
-        fadeDistance={20}
-        fadeStrength={5}
-        cellSize={0.5}
-        sectionSize={1}
-      />
+      {!depthMapUrl && (
+        <Grid
+          infiniteGrid
+          fadeDistance={20}
+          fadeStrength={5}
+          cellSize={0.5}
+          sectionSize={1}
+        />
+      )}
     </Canvas>
   )
 }

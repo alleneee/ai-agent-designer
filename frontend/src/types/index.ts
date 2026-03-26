@@ -20,6 +20,8 @@ export interface Scene {
   projectId: string
   furniture: FurnitureItem[]
   cameraPosition: [number, number, number]
+  depthMapBase64?: string
+  roomImageUrl?: string
 }
 
 export interface FurnitureItem {

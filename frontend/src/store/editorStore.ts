@@ -9,9 +9,12 @@ interface EditorState {
   selectedId: string | null
   history: FurnitureItem[][]
   historyIndex: number
+  depthMapUrl: string | null
+  roomTextureUrl: string | null
   setProjectId: (id: string) => void
   loadScene: (projectId: string) => Promise<void>
   saveScene: () => Promise<void>
+  setDepthData: (depthMapBase64: string, roomImageUrl: string) => void
   addFurniture: (modelId: string) => void
   removeFurniture: (id: string) => void
   updateFurniture: (id: string, updates: Partial<FurnitureItem>) => void
@@ -33,6 +36,8 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   selectedId: null,
   history: [],
   historyIndex: -1,
+  depthMapUrl: null,
+  roomTextureUrl: null,
 
   setProjectId: (id: string) => {
     set({ projectId: id })
@@ -47,6 +52,10 @@ export const useEditorStore = create<EditorState>((set, get) => ({
         history: [structuredClone(scene.furniture)],
         historyIndex: 0,
         selectedId: null,
+        depthMapUrl: scene.depthMapBase64
+          ? `data:image/png;base64,${scene.depthMapBase64}`
+          : null,
+        roomTextureUrl: scene.roomImageUrl ?? null,
       })
     } else {
       set({
@@ -55,19 +64,32 @@ export const useEditorStore = create<EditorState>((set, get) => ({
         history: [[]],
         historyIndex: 0,
         selectedId: null,
+        depthMapUrl: null,
+        roomTextureUrl: null,
       })
     }
   },
 
   saveScene: async () => {
-    const { projectId, furniture } = get()
+    const { projectId, furniture, depthMapUrl, roomTextureUrl } = get()
     if (!projectId) return
+    let depthMapBase64: string | undefined
+    if (depthMapUrl?.startsWith('data:image/png;base64,')) {
+      depthMapBase64 = depthMapUrl.replace('data:image/png;base64,', '')
+    }
     const scene: Scene = {
       projectId,
       furniture: structuredClone(furniture),
       cameraPosition: [5, 5, 5],
+      depthMapBase64,
+      roomImageUrl: roomTextureUrl ?? undefined,
     }
     await db.scenes.put(scene)
+  },
+
+  setDepthData: (depthMapBase64: string, roomImageUrl: string) => {
+    const depthMapUrl = `data:image/png;base64,${depthMapBase64}`
+    set({ depthMapUrl, roomTextureUrl: roomImageUrl })
   },
 
   addFurniture: (modelId: string) => {
