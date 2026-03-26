@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useEffect } from 'react'
+import { Suspense, useRef, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import dynamic from 'next/dynamic'
 import FurniturePanel from '@/components/editor/FurniturePanel'
@@ -13,6 +13,14 @@ const Canvas3D = dynamic(() => import('@/components/editor/Canvas3D'), {
 })
 
 export default function EditorPage() {
+  return (
+    <Suspense fallback={<div className="h-screen flex items-center justify-center text-slate-400">Loading...</div>}>
+      <EditorContent />
+    </Suspense>
+  )
+}
+
+function EditorContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const projectId = searchParams.get('project')

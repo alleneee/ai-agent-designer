@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { Suspense, useState, useEffect, useCallback, useRef } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import StyleSelector from '@/components/generate/StyleSelector'
 import FurniturePicker from '@/components/generate/FurniturePicker'
@@ -29,6 +29,14 @@ function LoadingOverlay() {
 }
 
 export default function GeneratePage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center text-slate-400">Loading...</div>}>
+      <GenerateContent />
+    </Suspense>
+  )
+}
+
+function GenerateContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const projectId = searchParams.get('project')

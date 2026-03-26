@@ -3,26 +3,43 @@ import { callSeedream } from '@/lib/seedream'
 import { buildPrompt } from '@/lib/promptBuilder'
 import type { GenerateRequest } from '@/types'
 
+export const maxDuration = 120
+
 export async function POST(request: Request) {
   try {
     const body: GenerateRequest = await request.json()
-    const { roomImage, style, furniture, prompt: customPrompt } = body
+    const { roomImage, style, furniture, furnitureImages, prompt: customPrompt } = body
 
-    if (!roomImage || !style) {
+    if (!style) {
       return NextResponse.json(
-        { error: 'roomImage and style are required' },
+        { error: 'style is required' },
         { status: 400 }
       )
     }
 
-    const prompt = buildPrompt(style, furniture, customPrompt)
+    const referenceImages: string[] = []
+    if (roomImage) {
+      referenceImages.push(roomImage)
+    }
+    if (furnitureImages) {
+      referenceImages.push(...furnitureImages)
+    }
+
+    const prompt = buildPrompt({
+      style,
+      furnitureDescriptions: furniture || [],
+      hasRoomImage: !!roomImage,
+      furnitureImageCount: furnitureImages?.length ?? 0,
+      customPrompt,
+    })
 
     const result = await callSeedream({
       prompt,
-      images: [roomImage],
+      image: referenceImages.length > 0 ? referenceImages : undefined,
       size: '2K',
-      max_images: 4,
+      output_format: 'jpeg',
       watermark: false,
+      n: 1,
     })
 
     return NextResponse.json({ images: result.images })

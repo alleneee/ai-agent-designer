@@ -40,9 +40,10 @@ export interface FurnitureMeta {
 }
 
 export interface GenerateRequest {
-  roomImage: string
+  roomImage?: string
   style: string
   furniture: string[]
+  furnitureImages?: string[]
   prompt?: string
 }
 
