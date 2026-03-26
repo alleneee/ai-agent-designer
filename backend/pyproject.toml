@@ -1,0 +1,27 @@
+[project]
+name = "furnish-backend"
+version = "0.1.0"
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi[standard]>=0.115.0",
+    "uvicorn[standard]>=0.34.0",
+    "httpx>=0.28.0",
+    "pydantic-settings>=2.7.0",
+    "python-multipart>=0.0.20",
+]
+
+[project.optional-dependencies]
+ml = [
+    "torch>=2.5.0",
+    "transformers>=4.47.0",
+    "pillow>=11.0.0",
+    "numpy>=2.0.0",
+]
+dev = [
+    "pytest>=8.0.0",
+    "pytest-asyncio>=0.25.0",
+    "httpx>=0.28.0",
+]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
