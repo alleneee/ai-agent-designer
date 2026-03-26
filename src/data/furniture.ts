@@ -1,0 +1,111 @@
+import { FurnitureMeta } from '@/types'
+
+export const FURNITURE_CATALOG: FurnitureMeta[] = [
+  {
+    id: 'sofa-gray',
+    name: '灰色布艺沙发',
+    category: 'living',
+    description: '灰色布艺三人沙发',
+    modelPath: '/models/sofa.glb',
+    thumbnail: '/models/thumbnails/sofa.png',
+  },
+  {
+    id: 'coffee-table',
+    name: '原木茶几',
+    category: 'living',
+    description: '北欧风原木茶几',
+    modelPath: '/models/coffee-table.glb',
+    thumbnail: '/models/thumbnails/coffee-table.png',
+  },
+  {
+    id: 'tv-stand',
+    name: '电视柜',
+    category: 'living',
+    description: '白色简约电视柜',
+    modelPath: '/models/tv-stand.glb',
+    thumbnail: '/models/thumbnails/tv-stand.png',
+  },
+  {
+    id: 'floor-lamp',
+    name: '落地灯',
+    category: 'living',
+    description: '现代简约落地灯',
+    modelPath: '/models/floor-lamp.glb',
+    thumbnail: '/models/thumbnails/floor-lamp.png',
+  },
+  {
+    id: 'bed-double',
+    name: '双人床',
+    category: 'bedroom',
+    description: '现代简约双人床',
+    modelPath: '/models/bed.glb',
+    thumbnail: '/models/thumbnails/bed.png',
+  },
+  {
+    id: 'nightstand',
+    name: '床头柜',
+    category: 'bedroom',
+    description: '白色床头柜',
+    modelPath: '/models/nightstand.glb',
+    thumbnail: '/models/thumbnails/nightstand.png',
+  },
+  {
+    id: 'wardrobe',
+    name: '衣柜',
+    category: 'bedroom',
+    description: '两门大衣柜',
+    modelPath: '/models/wardrobe.glb',
+    thumbnail: '/models/thumbnails/wardrobe.png',
+  },
+  {
+    id: 'desk',
+    name: '书桌',
+    category: 'bedroom',
+    description: '简约书桌',
+    modelPath: '/models/desk.glb',
+    thumbnail: '/models/thumbnails/desk.png',
+  },
+  {
+    id: 'dining-table',
+    name: '餐桌',
+    category: 'dining',
+    description: '四人餐桌',
+    modelPath: '/models/dining-table.glb',
+    thumbnail: '/models/thumbnails/dining-table.png',
+  },
+  {
+    id: 'dining-chair',
+    name: '餐椅',
+    category: 'dining',
+    description: '木质餐椅',
+    modelPath: '/models/dining-chair.glb',
+    thumbnail: '/models/thumbnails/dining-chair.png',
+  },
+  {
+    id: 'plant',
+    name: '盆栽',
+    category: 'other',
+    description: '绿色盆栽植物',
+    modelPath: '/models/plant.glb',
+    thumbnail: '/models/thumbnails/plant.png',
+  },
+  {
+    id: 'bookshelf',
+    name: '书架',
+    category: 'other',
+    description: '五层书架',
+    modelPath: '/models/bookshelf.glb',
+    thumbnail: '/models/thumbnails/bookshelf.png',
+  },
+]
+
+export const STYLES = [
+  { id: 'modern', name: '现代简约' },
+  { id: 'nordic', name: '北欧' },
+  { id: 'chinese', name: '中式' },
+  { id: 'japanese', name: '日式' },
+  { id: 'industrial', name: '工业风' },
+  { id: 'minimalist', name: '极简' },
+] as const
+
+export type StyleId = (typeof STYLES)[number]['id']
