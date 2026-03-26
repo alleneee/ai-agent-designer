@@ -116,10 +116,10 @@ function GenerateContent() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          roomImage: roomBase64,
+          room_image: roomBase64,
           style: styleName,
           furniture: furnitureDescriptions,
-          furnitureImages: furnitureImageBase64.length > 0 ? furnitureImageBase64 : undefined,
+          furniture_images: furnitureImageBase64.length > 0 ? furnitureImageBase64 : undefined,
           prompt: customPrompt || undefined,
         }),
       })
