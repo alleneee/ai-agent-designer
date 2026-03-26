@@ -1,5 +1,6 @@
 'use client'
 
+import { DoubleSide } from 'three'
 import { useTexture } from '@react-three/drei'
 import { useEditorStore } from '@/store/editorStore'
 
@@ -62,7 +63,7 @@ function DepthRoom({
         map={colorMap}
         displacementMap={displacementMap}
         displacementScale={-2.0}
-        side={2}
+        side={DoubleSide}
       />
     </mesh>
   )

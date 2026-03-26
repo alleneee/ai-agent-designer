@@ -36,6 +36,7 @@ function EditorContent() {
 
   useEffect(() => {
     if (!projectId) return
+    let roomUrl: string | null = null
     const fetchDepth = async () => {
       const project = await db.projects.get(projectId)
       if (!project?.roomImage) return
@@ -43,7 +44,7 @@ function EditorContent() {
       const { depthMapUrl } = useEditorStore.getState()
       if (depthMapUrl) return
 
-      const roomUrl = URL.createObjectURL(project.roomImage)
+      roomUrl = URL.createObjectURL(project.roomImage)
       const formData = new FormData()
       formData.append('file', project.roomImage, 'room.jpg')
 
@@ -56,10 +57,14 @@ function EditorContent() {
         const data = await resp.json()
         useEditorStore.getState().setDepthData(data.depth_map_base64, roomUrl)
       } catch {
-        // depth estimation failed, fallback to basic room
+        if (roomUrl) URL.revokeObjectURL(roomUrl)
+        roomUrl = null
       }
     }
     fetchDepth()
+    return () => {
+      if (roomUrl) URL.revokeObjectURL(roomUrl)
+    }
   }, [projectId])
 
   useEffect(() => {

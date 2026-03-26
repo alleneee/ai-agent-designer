@@ -32,8 +32,7 @@ async def call_seedream(
             },
         )
         resp.raise_for_status()
-
-    data = resp.json()
+        data = resp.json()
     result_images = [
         item.get("url") or item.get("b64_json", "")
         for item in data.get("data", [])

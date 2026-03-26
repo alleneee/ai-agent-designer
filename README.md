@@ -39,17 +39,20 @@ npm install
 
 ### 配置环境变量
 
-复制 `frontend/.env.local.example` 为 `frontend/.env.local`，填入火山引擎 Seedream API 密钥：
+复制 `backend/.env.example` 为 `backend/.env`，填入火山引擎 Seedream API 密钥：
 
 ```text
 SEEDREAM_API_KEY=your_api_key
-SEEDREAM_API_URL=https://visual.volcengineapi.com/v1/images/generations
+SEEDREAM_MODEL=doubao-seedream-5-0-260128
+SEEDREAM_API_URL=https://ark.cn-beijing.volces.com/api/v3/images/generations
+DEPTH_MODEL_NAME=depth-anything/Depth-Anything-V2-Base-hf
 ```
 
 ### 启动后端
 
 ```bash
 cd backend
+uv sync --extra ml --extra dev
 uv run uvicorn app.main:app --reload --port 8000
 ```
 
@@ -65,8 +68,11 @@ npm run dev
 ### 运行测试
 
 ```bash
-cd frontend
-npm test
+# 前端测试
+cd frontend && npm test
+
+# 后端测试
+cd backend && uv run pytest -v
 ```
 
 ## 项目结构

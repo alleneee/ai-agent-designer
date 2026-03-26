@@ -126,7 +126,7 @@ function GenerateContent() {
 
       if (!response.ok) {
         const data = await response.json()
-        throw new Error(data.error || 'Generation failed')
+        throw new Error(data.detail || 'Generation failed')
       }
 
       const data = await response.json()
