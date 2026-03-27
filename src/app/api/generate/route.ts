@@ -71,14 +71,19 @@ export async function POST(request: NextRequest) {
 
   const furnitureImageCount = furniture_items.filter((i) => i.image).length
 
-  const optimized = await optimizePrompt({
+  const inputSummary = {
     style,
     furnitureItems: furniture_items.map((i) => ({ name: i.name, hasImage: !!i.image })),
     furnitureImageCount,
     extra,
-  })
+  }
+  console.log('[PromptAgent] input:', JSON.stringify(inputSummary))
+
+  const optimized = await optimizePrompt(inputSummary)
 
   const prompt = optimized || buildFallbackPrompt(style, furniture_items, extra)
+  console.log('[PromptAgent] optimized:', optimized || '(empty, using fallback)')
+  console.log('[PromptAgent] final prompt:', prompt)
 
   try {
     const response = await fetch(`${SEEDREAM_BASE_URL}/images/generations`, {
