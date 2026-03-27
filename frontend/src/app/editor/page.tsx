@@ -41,11 +41,20 @@ function EditorContent() {
     loadScene(projectId)
   }, [projectId, loadScene])
 
-  const loadBgImage = useCallback((url: string) => {
+  const loadBgImage = useCallback(async (url: string) => {
+    let localUrl = url
+    if (!url.startsWith('blob:') && !url.startsWith('data:')) {
+      try {
+        const resp = await fetch(url)
+        const blob = await resp.blob()
+        localUrl = URL.createObjectURL(blob)
+      } catch {
+        localUrl = url
+      }
+    }
     const img = new Image()
-    img.crossOrigin = 'anonymous'
     img.onload = () => { bgImageRef.current = img; setBgLoaded(true) }
-    img.src = url
+    img.src = localUrl
   }, [])
 
   useEffect(() => {
