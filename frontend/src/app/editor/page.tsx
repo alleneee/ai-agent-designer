@@ -32,6 +32,8 @@ function EditorContent() {
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 })
   const [generating, setGenerating] = useState(false)
   const [resultUrl, setResultUrl] = useState<string | null>(null)
+  const bgImageRef = useRef<HTMLImageElement | null>(null)
+  const [bgLoaded, setBgLoaded] = useState(false)
 
   useEffect(() => {
     if (!projectId) return
@@ -40,8 +42,16 @@ function EditorContent() {
 
   useEffect(() => {
     if (!projectId) return
+    db.projects.get(projectId).then((project) => {
+      if (!project?.roomImage) return
+      const url = URL.createObjectURL(project.roomImage)
+      setBackground(url)
+      const img = new Image()
+      img.onload = () => { bgImageRef.current = img; setBgLoaded(true) }
+      img.src = url
+    })
     getSelectedImage(projectId).then((img) => {
-      if (img?.imageUrl) setBackground(img.imageUrl)
+      if (img?.imageUrl) setResultUrl(img.imageUrl)
     })
   }, [projectId, getSelectedImage, setBackground])
 
@@ -53,14 +63,19 @@ function EditorContent() {
 
     ctx.clearRect(0, 0, CANVAS_W, CANVAS_H)
 
-    ctx.fillStyle = '#fafaf9'
-    ctx.fillRect(0, 0, CANVAS_W, CANVAS_H)
-
-    ctx.fillStyle = '#d4d4d4'
-    ctx.fillRect(0, 0, CANVAS_W, WALL_THICKNESS)
-    ctx.fillRect(0, 0, WALL_THICKNESS, CANVAS_H)
-    ctx.fillRect(CANVAS_W - WALL_THICKNESS, 0, WALL_THICKNESS, CANVAS_H)
-    ctx.fillRect(0, CANVAS_H - WALL_THICKNESS, CANVAS_W, WALL_THICKNESS)
+    if (bgImageRef.current) {
+      ctx.drawImage(bgImageRef.current, 0, 0, CANVAS_W, CANVAS_H)
+      ctx.fillStyle = 'rgba(255,255,255,0.15)'
+      ctx.fillRect(0, 0, CANVAS_W, CANVAS_H)
+    } else {
+      ctx.fillStyle = '#fafaf9'
+      ctx.fillRect(0, 0, CANVAS_W, CANVAS_H)
+      ctx.fillStyle = '#d4d4d4'
+      ctx.fillRect(0, 0, CANVAS_W, WALL_THICKNESS)
+      ctx.fillRect(0, 0, WALL_THICKNESS, CANVAS_H)
+      ctx.fillRect(CANVAS_W - WALL_THICKNESS, 0, WALL_THICKNESS, CANVAS_H)
+      ctx.fillRect(0, CANVAS_H - WALL_THICKNESS, CANVAS_W, WALL_THICKNESS)
+    }
 
     for (const m of markers) {
       const meta = FURNITURE_CATALOG.find((f) => f.id === m.catalogId)
@@ -88,7 +103,7 @@ function EditorContent() {
 
       ctx.restore()
     }
-  }, [markers, selectedId])
+  }, [markers, selectedId, bgLoaded])
 
   useEffect(() => {
     drawCanvas()
