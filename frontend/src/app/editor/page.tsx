@@ -31,6 +31,7 @@ function EditorContent() {
   const [dragging, setDragging] = useState<string | null>(null)
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 })
   const [generating, setGenerating] = useState(false)
+  const [parsingFloorplan, setParsingFloorplan] = useState(false)
   const [resultUrl, setResultUrl] = useState<string | null>(null)
   const bgImageRef = useRef<HTMLImageElement | null>(null)
   const [bgLoaded, setBgLoaded] = useState(false)
@@ -40,20 +41,61 @@ function EditorContent() {
     loadScene(projectId)
   }, [projectId, loadScene])
 
+  const loadBgImage = useCallback((url: string) => {
+    const img = new Image()
+    img.crossOrigin = 'anonymous'
+    img.onload = () => { bgImageRef.current = img; setBgLoaded(true) }
+    img.src = url
+  }, [])
+
   useEffect(() => {
     if (!projectId) return
-    db.projects.get(projectId).then((project) => {
-      if (!project?.roomImage) return
-      const url = URL.createObjectURL(project.roomImage)
-      setBackground(url)
-      const img = new Image()
-      img.onload = () => { bgImageRef.current = img; setBgLoaded(true) }
-      img.src = url
-    })
-    getSelectedImage(projectId).then((img) => {
-      if (img?.imageUrl) setResultUrl(img.imageUrl)
-    })
-  }, [projectId, getSelectedImage, setBackground])
+    let cancelled = false
+
+    const init = async () => {
+      const project = await db.projects.get(projectId)
+      if (!project?.roomImage || cancelled) return
+
+      getSelectedImage(projectId).then((img) => {
+        if (img?.imageUrl) setResultUrl(img.imageUrl)
+      })
+
+      const roomB64 = await blobToBase64(project.roomImage)
+
+      setParsingFloorplan(true)
+      try {
+        const apiBase = process.env.NEXT_PUBLIC_API_URL || ''
+        const resp = await fetch(`${apiBase}/api/generate`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            room_image: roomB64,
+            style: '简洁线条',
+            furniture: [],
+            furniture_images: undefined,
+            prompt: '将图1中的室内照片转换为简洁的俯视平面布局图。用黑色线条画出墙壁轮廓、门窗位置。白色背景，不需要填色，不需要家具，只画建筑结构。平面图风格，工程制图。',
+          }),
+        })
+        if (!resp.ok) throw new Error('Failed to generate floorplan')
+        const data = await resp.json()
+        if (!cancelled && data.images?.[0]) {
+          setBackground(data.images[0])
+          loadBgImage(data.images[0])
+        }
+      } catch {
+        if (!cancelled) {
+          const url = URL.createObjectURL(project.roomImage)
+          setBackground(url)
+          loadBgImage(url)
+        }
+      } finally {
+        if (!cancelled) setParsingFloorplan(false)
+      }
+    }
+
+    init()
+    return () => { cancelled = true }
+  }, [projectId, getSelectedImage, setBackground, loadBgImage])
 
   const drawCanvas = useCallback(() => {
     const canvas = canvasRef.current
@@ -298,10 +340,12 @@ function EditorContent() {
         <div className="flex-1 flex flex-col items-center justify-center gap-4 p-4 overflow-auto">
           <div className="flex gap-6 items-start">
             <div>
-              <p className="text-xs text-slate-400 mb-2 text-center">平面布局图（拖放家具）</p>
+              <p className="text-xs text-slate-400 mb-2 text-center">
+                {parsingFloorplan ? 'AI 正在解析平面图…' : '平面布局图（拖放家具）'}
+              </p>
               <div
                 ref={containerRef}
-                className="border-2 border-slate-300 rounded-lg bg-white shadow-sm"
+                className="border-2 border-slate-300 rounded-lg bg-white shadow-sm relative"
                 style={{ width: CANVAS_W, height: CANVAS_H }}
               >
                 <canvas
@@ -314,19 +358,27 @@ function EditorContent() {
                   onMouseUp={handleMouseUp}
                   onMouseLeave={handleMouseUp}
                 />
+                {parsingFloorplan && (
+                  <div className="absolute inset-0 bg-white/80 flex flex-col items-center justify-center gap-3 rounded-lg">
+                    <svg className="w-8 h-8 animate-spin text-blue-500" viewBox="0 0 24 24" fill="none">
+                      <circle className="opacity-20" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" />
+                      <path className="opacity-90" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                    </svg>
+                    <p className="text-sm text-slate-500">AI 正在将房间照片解析为平面图</p>
+                    <p className="text-xs text-slate-400">通常需要 30-60 秒</p>
+                  </div>
+                )}
               </div>
               <p className="text-xs text-slate-400 mt-2 text-center">
                 点击家具添加 | 拖拽移动 | R 旋转 | Delete 删除
               </p>
             </div>
 
-            {(resultUrl || backgroundUrl) && (
+            {resultUrl && (
               <div>
-                <p className="text-xs text-slate-400 mb-2 text-center">
-                  {resultUrl ? '生成结果' : 'AI 效果图'}
-                </p>
+                <p className="text-xs text-slate-400 mb-2 text-center">生成效果图</p>
                 <img
-                  src={resultUrl || backgroundUrl || ''}
+                  src={resultUrl}
                   alt="效果图"
                   className="rounded-lg border shadow-sm"
                   style={{ maxWidth: CANVAS_W, maxHeight: CANVAS_H, objectFit: 'contain' }}
