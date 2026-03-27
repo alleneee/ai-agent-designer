@@ -1,3 +1,5 @@
+import asyncio
+
 from fastapi import APIRouter, HTTPException
 
 from app.schemas.generate import GenerateRequest, GenerateResponse
@@ -27,7 +29,8 @@ async def generate(req: GenerateRequest):
     )
 
     try:
-        images = await call_seedream(
+        images = await asyncio.to_thread(
+            call_seedream,
             prompt=prompt,
             images=reference_images if reference_images else None,
         )

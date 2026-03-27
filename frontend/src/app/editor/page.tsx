@@ -49,7 +49,8 @@ function EditorContent() {
       formData.append('file', project.roomImage, 'room.jpg')
 
       try {
-        const resp = await fetch('/api/depth', {
+        const apiBase = process.env.NEXT_PUBLIC_API_URL || ''
+        const resp = await fetch(`${apiBase}/api/depth`, {
           method: 'POST',
           body: formData,
         })

@@ -119,10 +119,13 @@ export default function HomePage() {
             <h2 className="text-xl font-semibold text-slate-900 mb-5">我的项目</h2>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
               {projects.map((project) => (
-                <button
+                <div
                   key={project.id}
+                  role="button"
+                  tabIndex={0}
                   onClick={() => handleOpenProject(project.id)}
-                  className="group relative text-left rounded-2xl overflow-hidden border border-slate-200 bg-white hover:border-blue-300 hover:shadow-lg transition-all duration-200 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:outline-none"
+                  onKeyDown={(e) => { if (e.key === 'Enter') handleOpenProject(project.id) }}
+                  className="group relative text-left rounded-2xl overflow-hidden border border-slate-200 bg-white hover:border-blue-300 hover:shadow-lg transition-all duration-200 cursor-pointer focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:outline-none"
                 >
                   <ProjectThumbnail projectId={project.id} />
                   <div className="p-3">
@@ -142,7 +145,7 @@ export default function HomePage() {
                   >
                     ×
                   </button>
-                </button>
+                </div>
               ))}
             </div>
           </section>
