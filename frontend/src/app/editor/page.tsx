@@ -37,32 +37,17 @@ function EditorContent() {
   useEffect(() => {
     if (!projectId) return
     let roomUrl: string | null = null
-    const fetchDepth = async () => {
+    const loadRoom = async () => {
       const project = await db.projects.get(projectId)
       if (!project?.roomImage) return
 
-      const { depthMapUrl } = useEditorStore.getState()
-      if (depthMapUrl) return
+      const { roomTextureUrl } = useEditorStore.getState()
+      if (roomTextureUrl) return
 
       roomUrl = URL.createObjectURL(project.roomImage)
-      const formData = new FormData()
-      formData.append('file', project.roomImage, 'room.jpg')
-
-      try {
-        const apiBase = process.env.NEXT_PUBLIC_API_URL || ''
-        const resp = await fetch(`${apiBase}/api/depth`, {
-          method: 'POST',
-          body: formData,
-        })
-        if (!resp.ok) return
-        const data = await resp.json()
-        useEditorStore.getState().setDepthData(data.depth_map_base64, roomUrl)
-      } catch {
-        if (roomUrl) URL.revokeObjectURL(roomUrl)
-        roomUrl = null
-      }
+      useEditorStore.getState().setRoomTexture(roomUrl)
     }
-    fetchDepth()
+    loadRoom()
     return () => {
       if (roomUrl) URL.revokeObjectURL(roomUrl)
     }

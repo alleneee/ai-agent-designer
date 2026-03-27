@@ -5,13 +5,13 @@ import { useTexture } from '@react-three/drei'
 import { useEditorStore } from '@/store/editorStore'
 
 export default function Room() {
-  const { depthMapUrl, roomTextureUrl } = useEditorStore()
+  const { roomTextureUrl } = useEditorStore()
 
-  if (!depthMapUrl || !roomTextureUrl) {
+  if (!roomTextureUrl) {
     return <FallbackRoom />
   }
 
-  return <DepthRoom depthMapUrl={depthMapUrl} roomTextureUrl={roomTextureUrl} />
+  return <PhotoRoom roomTextureUrl={roomTextureUrl} />
 }
 
 function FallbackRoom() {
@@ -42,29 +42,26 @@ function FallbackRoom() {
   )
 }
 
-function DepthRoom({
-  depthMapUrl,
-  roomTextureUrl,
-}: {
-  depthMapUrl: string
-  roomTextureUrl: string
-}) {
-  const [colorMap, displacementMap] = useTexture([roomTextureUrl, depthMapUrl])
+function PhotoRoom({ roomTextureUrl }: { roomTextureUrl: string }) {
+  const colorMap = useTexture(roomTextureUrl)
 
-  const planeWidth = 6
   const img = colorMap.image as HTMLImageElement
-  const planeHeight = (img.height / img.width) * planeWidth
-  const segments = 256
+  const aspect = img.width / img.height
+  const wallWidth = 6
+  const wallHeight = wallWidth / aspect
+  const floorDepth = 5
 
   return (
-    <mesh rotation={[-Math.PI / 4, 0, 0]} position={[0, 1.5, 0]} receiveShadow>
-      <planeGeometry args={[planeWidth, planeHeight, segments, segments]} />
-      <meshStandardMaterial
-        map={colorMap}
-        displacementMap={displacementMap}
-        displacementScale={-2.0}
-        side={DoubleSide}
-      />
-    </mesh>
+    <group>
+      <mesh position={[0, wallHeight / 2, -floorDepth / 2]} receiveShadow>
+        <planeGeometry args={[wallWidth, wallHeight]} />
+        <meshStandardMaterial map={colorMap} side={DoubleSide} />
+      </mesh>
+
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 0]} receiveShadow>
+        <planeGeometry args={[wallWidth, floorDepth]} />
+        <meshStandardMaterial color="#e8e0d8" transparent opacity={0.3} />
+      </mesh>
+    </group>
   )
 }

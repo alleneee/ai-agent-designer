@@ -15,6 +15,7 @@ interface EditorState {
   loadScene: (projectId: string) => Promise<void>
   saveScene: () => Promise<void>
   setDepthData: (depthMapBase64: string, roomImageUrl: string) => void
+  setRoomTexture: (roomImageUrl: string) => void
   addFurniture: (modelId: string) => void
   removeFurniture: (id: string) => void
   updateFurniture: (id: string, updates: Partial<FurnitureItem>) => void
@@ -90,6 +91,10 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   setDepthData: (depthMapBase64: string, roomImageUrl: string) => {
     const depthMapUrl = `data:image/png;base64,${depthMapBase64}`
     set({ depthMapUrl, roomTextureUrl: roomImageUrl })
+  },
+
+  setRoomTexture: (roomImageUrl: string) => {
+    set({ roomTextureUrl: roomImageUrl })
   },
 
   addFurniture: (modelId: string) => {
