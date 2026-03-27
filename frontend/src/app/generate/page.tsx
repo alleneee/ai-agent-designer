@@ -38,7 +38,7 @@ function GenerateContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const projectId = searchParams.get('project')
-  const { saveGeneratedImages, selectGeneratedImage, getSelectedImage } = useProjectStore()
+  const { saveGeneratedImages, selectGeneratedImage } = useProjectStore()
   const [savedImages, setSavedImages] = useState<{ id: string; url: string }[]>([])
   const furnitureInputRef = useRef<HTMLInputElement>(null)
 
@@ -151,10 +151,10 @@ function GenerateContent() {
       }
 
       const data = await response.json()
-      setGeneratedImages(data.images)
 
       const prompt = buildPromptSummary(styleName, furnitureDescriptions, customPrompt)
       const saved = await saveGeneratedImages(projectId, data.images, prompt)
+      setGeneratedImages(saved.map((s) => s.imageUrl))
       setSavedImages(saved.map((s) => ({ id: s.id, url: s.imageUrl })))
       setSelectedResult(0)
     } catch (err) {
@@ -192,7 +192,7 @@ function GenerateContent() {
               onClick={handleEnterEditor}
               className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-xl hover:bg-blue-700 active:scale-95 transition-all duration-150 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:outline-none"
             >
-              进入 3D 编辑
+              进入 2.5D 编辑
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                 <path d="M5 12h14M12 5l7 7-7 7" />
               </svg>
@@ -234,7 +234,7 @@ function GenerateContent() {
                 onClick={handleEnterEditor}
                 className="w-full py-4 bg-gradient-to-r from-blue-600 to-blue-500 text-white text-base font-semibold rounded-2xl hover:from-blue-700 hover:to-blue-600 active:scale-[0.99] transition-all duration-150 shadow-lg shadow-blue-200 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:outline-none"
               >
-                进入 3D 编辑，调整家具摆放
+                进入 2.5D 编辑，调整家具摆放
               </button>
             )}
           </div>

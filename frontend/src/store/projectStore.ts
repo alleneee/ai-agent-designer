@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { v4 as uuidv4 } from 'uuid'
 import { db } from '@/lib/db'
+import { blobToBase64 } from '@/lib/imageUtils'
 import type { Project, GeneratedImage } from '@/types'
 
 interface ProjectState {
@@ -16,7 +17,22 @@ interface ProjectState {
   getSelectedImage: (projectId: string) => Promise<GeneratedImage | undefined>
 }
 
-export const useProjectStore = create<ProjectState>((set, get) => ({
+async function persistImageUrl(imageUrl: string): Promise<string> {
+  if (imageUrl.startsWith('data:')) return imageUrl
+
+  try {
+    const response = await fetch(imageUrl)
+    if (!response.ok) {
+      throw new Error(`Failed to fetch generated image: ${response.status}`)
+    }
+
+    return await blobToBase64(await response.blob())
+  } catch {
+    return imageUrl
+  }
+}
+
+export const useProjectStore = create<ProjectState>((set) => ({
   projects: [],
   currentProjectId: null,
 
@@ -58,7 +74,9 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
       await db.generatedImages.where('projectId').equals(projectId).delete()
     }
 
-    const images: GeneratedImage[] = imageUrls.map((url, i) => ({
+    const persistedUrls = await Promise.all(imageUrls.map((url) => persistImageUrl(url)))
+
+    const images: GeneratedImage[] = persistedUrls.map((url, i) => ({
       id: uuidv4(),
       projectId,
       imageUrl: url,

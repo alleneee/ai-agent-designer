@@ -19,17 +19,17 @@ export interface GeneratedImage {
 
 export interface Scene {
   projectId: string
-  furniture: FurnitureItem[]
-  cameraPosition: [number, number, number]
-  selectedImageUrl?: string
+  markers: FurnitureMarker[]
 }
 
-export interface FurnitureItem {
+export interface FurnitureMarker {
   id: string
-  modelId: string
-  position: [number, number, number]
-  rotation: [number, number, number]
-  scale: [number, number, number]
+  catalogId: string
+  x: number
+  y: number
+  w: number
+  h: number
+  rotation: number
 }
 
 export interface FurnitureMeta {
@@ -37,8 +37,6 @@ export interface FurnitureMeta {
   name: string
   category: 'living' | 'bedroom' | 'dining' | 'other'
   description: string
-  modelPath: string
-  thumbnail: string
 }
 
 export interface GenerateRequest {
