@@ -10,8 +10,6 @@ import { useProjectStore } from '@/store/projectStore'
 import { FURNITURE_CATALOG, STYLES, type StyleId } from '@/data/furniture'
 import { blobToBase64 } from '@/lib/imageUtils'
 import { db } from '@/lib/db'
-import { v4 as uuidv4 } from 'uuid'
-import type { GeneratedImage } from '@/types'
 
 function LoadingOverlay() {
   return (
@@ -40,7 +38,8 @@ function GenerateContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const projectId = searchParams.get('project')
-  const { saveGeneratedImages } = useProjectStore()
+  const { saveGeneratedImages, selectGeneratedImage, getSelectedImage } = useProjectStore()
+  const [savedImages, setSavedImages] = useState<{ id: string; url: string }[]>([])
   const furnitureInputRef = useRef<HTMLInputElement>(null)
 
   const [roomPreview, setRoomPreview] = useState<string | null>(null)
@@ -60,6 +59,14 @@ function GenerateContent() {
       setStyle((project.style as StyleId) || 'modern')
       const url = URL.createObjectURL(project.roomImage)
       setRoomPreview(url)
+    })
+    db.generatedImages.where('projectId').equals(projectId).toArray().then((imgs) => {
+      if (imgs.length > 0) {
+        setGeneratedImages(imgs.map((i) => i.imageUrl))
+        setSavedImages(imgs.map((i) => ({ id: i.id, url: i.imageUrl })))
+        const selIdx = imgs.findIndex((i) => i.selected)
+        setSelectedResult(selIdx >= 0 ? selIdx : 0)
+      }
     })
   }, [projectId])
 
@@ -88,6 +95,19 @@ function GenerateContent() {
       return prev.filter((_, i) => i !== index)
     })
   }, [])
+
+  const handleSelectResult = useCallback((index: number) => {
+    setSelectedResult(index)
+    if (projectId && savedImages[index]) {
+      selectGeneratedImage(projectId, savedImages[index].id)
+    }
+  }, [projectId, savedImages, selectGeneratedImage])
+
+  const buildPromptSummary = (styleName: string, furniture: string[], custom?: string) => {
+    const parts = [styleName, ...furniture]
+    if (custom) parts.push(custom)
+    return parts.join(', ')
+  }
 
   const handleGenerate = async () => {
     if (!projectId) return
@@ -133,15 +153,10 @@ function GenerateContent() {
       const data = await response.json()
       setGeneratedImages(data.images)
 
-      const images: GeneratedImage[] = data.images.map((img: string) => ({
-        id: uuidv4(),
-        projectId,
-        imageData: new Blob(),
-        prompt: '',
-        selected: false,
-        createdAt: Date.now(),
-      }))
-      await saveGeneratedImages(projectId, images)
+      const prompt = buildPromptSummary(styleName, furnitureDescriptions, customPrompt)
+      const saved = await saveGeneratedImages(projectId, data.images, prompt)
+      setSavedImages(saved.map((s) => ({ id: s.id, url: s.imageUrl })))
+      setSelectedResult(0)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unknown error')
     } finally {
@@ -209,7 +224,7 @@ function GenerateContent() {
               <ResultGallery
                 images={generatedImages}
                 selectedIndex={selectedResult}
-                onSelect={setSelectedResult}
+                onSelect={handleSelectResult}
               />
             </div>
 

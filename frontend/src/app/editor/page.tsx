@@ -7,7 +7,7 @@ import FurniturePanel from '@/components/editor/FurniturePanel'
 import PropertyPanel from '@/components/editor/PropertyPanel'
 import Toolbar from '@/components/editor/Toolbar'
 import { useEditorStore } from '@/store/editorStore'
-import { db } from '@/lib/db'
+import { useProjectStore } from '@/store/projectStore'
 
 const Canvas3D = dynamic(() => import('@/components/editor/Canvas3D'), {
   ssr: false,
@@ -27,6 +27,7 @@ function EditorContent() {
   const projectId = searchParams.get('project')
   const canvasContainerRef = useRef<HTMLDivElement>(null)
   const { furniture, loadScene } = useEditorStore()
+  const { getSelectedImage } = useProjectStore()
 
   useEffect(() => {
     if (projectId) {
@@ -36,22 +37,18 @@ function EditorContent() {
 
   useEffect(() => {
     if (!projectId) return
-    let roomUrl: string | null = null
-    const loadRoom = async () => {
-      const project = await db.projects.get(projectId)
-      if (!project?.roomImage) return
-
+    const loadBackground = async () => {
       const { roomTextureUrl } = useEditorStore.getState()
       if (roomTextureUrl) return
 
-      roomUrl = URL.createObjectURL(project.roomImage)
-      useEditorStore.getState().setRoomTexture(roomUrl)
+      const selected = await getSelectedImage(projectId)
+      if (selected?.imageUrl) {
+        useEditorStore.getState().setRoomTexture(selected.imageUrl)
+        return
+      }
     }
-    loadRoom()
-    return () => {
-      if (roomUrl) URL.revokeObjectURL(roomUrl)
-    }
-  }, [projectId])
+    loadBackground()
+  }, [projectId, getSelectedImage])
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -83,7 +80,7 @@ function EditorContent() {
         >
           返回
         </button>
-        <h1 className="font-semibold">3D 编辑器</h1>
+        <h1 className="font-semibold">2.5D 编辑器</h1>
         <span className="text-xs text-gray-400">
           {furniture.length} 件家具
         </span>

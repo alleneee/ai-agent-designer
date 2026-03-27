@@ -11,7 +11,9 @@ interface ProjectState {
   setCurrentProject: (id: string | null) => void
   deleteProject: (id: string) => Promise<void>
   getGeneratedImages: (projectId: string) => Promise<GeneratedImage[]>
-  saveGeneratedImages: (projectId: string, images: GeneratedImage[]) => Promise<void>
+  saveGeneratedImages: (projectId: string, imageUrls: string[], prompt: string) => Promise<GeneratedImage[]>
+  selectGeneratedImage: (projectId: string, imageId: string) => Promise<void>
+  getSelectedImage: (projectId: string) => Promise<GeneratedImage | undefined>
 }
 
 export const useProjectStore = create<ProjectState>((set, get) => ({
@@ -38,6 +40,8 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
 
   deleteProject: async (id: string) => {
     await db.projects.delete(id)
+    await db.generatedImages.where('projectId').equals(id).delete()
+    await db.scenes.delete(id)
     set((state) => ({
       projects: state.projects.filter((p) => p.id !== id),
       currentProjectId: state.currentProjectId === id ? null : state.currentProjectId,
@@ -48,7 +52,33 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
     return db.generatedImages.where('projectId').equals(projectId).toArray()
   },
 
-  saveGeneratedImages: async (_projectId: string, images: GeneratedImage[]) => {
+  saveGeneratedImages: async (projectId: string, imageUrls: string[], prompt: string) => {
+    const existing = await db.generatedImages.where('projectId').equals(projectId).toArray()
+    if (existing.length > 0) {
+      await db.generatedImages.where('projectId').equals(projectId).delete()
+    }
+
+    const images: GeneratedImage[] = imageUrls.map((url, i) => ({
+      id: uuidv4(),
+      projectId,
+      imageUrl: url,
+      prompt,
+      selected: i === 0,
+      createdAt: Date.now(),
+    }))
     await db.generatedImages.bulkAdd(images)
+    return images
+  },
+
+  selectGeneratedImage: async (projectId: string, imageId: string) => {
+    const all = await db.generatedImages.where('projectId').equals(projectId).toArray()
+    for (const img of all) {
+      await db.generatedImages.update(img.id, { selected: img.id === imageId })
+    }
+  },
+
+  getSelectedImage: async (projectId: string) => {
+    const all = await db.generatedImages.where('projectId').equals(projectId).toArray()
+    return all.find((img) => img.selected) || all[0]
   },
 }))

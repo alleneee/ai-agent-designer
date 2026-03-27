@@ -10,7 +10,8 @@ export interface Project {
 export interface GeneratedImage {
   id: string
   projectId: string
-  imageData: Blob
+  imageUrl: string
+  imageData?: Blob
   prompt: string
   selected: boolean
   createdAt: number
@@ -20,8 +21,7 @@ export interface Scene {
   projectId: string
   furniture: FurnitureItem[]
   cameraPosition: [number, number, number]
-  depthMapBase64?: string
-  roomImageUrl?: string
+  selectedImageUrl?: string
 }
 
 export interface FurnitureItem {

@@ -13,4 +13,10 @@ db.version(1).stores({
   scenes: 'projectId',
 })
 
+db.version(2).stores({
+  projects: 'id, createdAt',
+  generatedImages: 'id, projectId, createdAt',
+  scenes: 'projectId',
+})
+
 export { db }
