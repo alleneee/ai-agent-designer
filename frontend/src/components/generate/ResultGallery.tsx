@@ -98,12 +98,14 @@ export default function ResultGallery({
           {images.map((src, i) => {
             const isSelected = selectedIndex === i
             return (
-              <button
+              <div
                 key={i}
-                type="button"
+                role="button"
+                tabIndex={0}
                 onClick={() => onSelect(i)}
+                onKeyDown={(e) => { if (e.key === 'Enter') onSelect(i) }}
                 className={[
-                  'group relative rounded-xl overflow-hidden border-2 transition-all duration-200 text-left',
+                  'group relative rounded-xl overflow-hidden border-2 transition-all duration-200 text-left cursor-pointer',
                   'focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:outline-none',
                   isSelected
                     ? 'border-blue-500 shadow-lg shadow-blue-100 scale-[1.02]'
@@ -142,7 +144,7 @@ export default function ResultGallery({
                     <line x1="3" y1="21" x2="10" y2="14" />
                   </svg>
                 </button>
-              </button>
+              </div>
             )
           })}
         </div>
