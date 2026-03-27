@@ -1,9 +1,14 @@
 import Anthropic from '@anthropic-ai/sdk'
 
-const client = new Anthropic({
-  apiKey: process.env.LLM_API_KEY || '',
-  baseURL: process.env.LLM_API_BASE || 'https://api.minimaxi.com/anthropic',
-})
+const LLM_API_KEY = process.env.LLM_API_KEY
+const LLM_API_BASE = process.env.LLM_API_BASE || 'https://api.minimaxi.com/anthropic'
+
+function getClient() {
+  if (!LLM_API_KEY) {
+    throw new Error('LLM_API_KEY is not set')
+  }
+  return new Anthropic({ apiKey: LLM_API_KEY, baseURL: LLM_API_BASE })
+}
 
 const MODEL = process.env.LLM_MODEL || 'anthropic/MiniMax-M2.7'
 
@@ -61,7 +66,7 @@ export async function optimizePrompt(input: OptimizeInput): Promise<string> {
   ].filter(Boolean).join('\n')
 
   try {
-    const response = await client.messages.create({
+    const response = await getClient().messages.create({
       model: MODEL,
       max_tokens: 1024,
       system: SYSTEM_PROMPT,
